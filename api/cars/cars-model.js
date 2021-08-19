@@ -19,9 +19,16 @@ const create = (car) => {
   });
 };
 
+const remove = (id) => {
+  return db('cars')
+  .where('id', id)
+  .del();
+};
+
 module.exports = {
   getAll,
   getById,
   create,
   getByVin,
+  remove,
 };

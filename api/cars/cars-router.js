@@ -47,6 +47,13 @@ router.put(
         next(error);    
     }
 });
+router.delete('/:id', checkCarId, async (req, res, next) => {
+    try {
+        res.status(200).json({message: `record id ${req.params.id} deleted`});
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
 
