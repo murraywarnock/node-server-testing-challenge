@@ -1,7 +1,5 @@
-const request = require('supertest');
 const db = require('../../data/db-config');
-const server = require('../server');
-const Cars = require('./cars-model');
+const Car = require('./cars-model');
 
 test('it is the correct environment for the tests', () => {
   expect(process.env.DB_ENV).toBe('testing');
@@ -14,119 +12,36 @@ beforeAll(async () => {
 beforeEach(async () => {
   await db.seed.run();
 });
-afterAll(async () => {
-    await db.destroy();
-});
 
-describe('[GET] /api/cars', () => {
-    it('should return a 200 OK status', async () => {
-      const res = await request(server).get('/api/cars');
-      expect(res.status).toBe(200);
-    });
-    it('should return JSON', async () => {
-      const res = await request(server).get('/api/cars');
-      // console.log(res.header)
-      expect(res.type).toBe('application/json');
-    });
-    it('should return a list of cars', async () => {
-      const res = await request(server).get('/api/cars');
-      expect(res.body).toHaveLength(3);
-    });
-});
+describe('Car db access functions', () => {
 
-describe('[POST] /api/cars', () => {
-    it('responds with a 422 if no make in payload', async () => {
-      const res = await request(server)
-      .post('/api/cars')
-      .send({
-        vin: "1GNLRFEDXAS142337",
-        model: "camry",
-        mileage: 1234,
+  describe('Car.getAll', () => {
+    it('resolves to all cars in the cars table', async () => {
+      const cars = await Car.getAll();
+      expect(cars.length).toBe(3);
+      expect(cars).toHaveLength(3);
+    });
+    it('resolves the the correct car structure', async () => {
+      const cars = await Car.getAll();
+      expect(cars[0]).toHaveProperty('vin', '1FMZU73K33ZA43437');
+      expect(cars[0]).toHaveProperty('make', 'toyota');
+      expect(cars[0]).toHaveProperty('model', 'prius');
+      expect(cars[0]).toHaveProperty('title', 'clean');
+      expect(cars[0]).toHaveProperty('mileage', 25009);
+      expect(cars[0]).toHaveProperty('transmission', 'manual');
+      expect(cars[1]).toMatchObject({
+        vin: "2G1WG5E35D1200283",
+        make: "ford",
+        model: "focus",
+        mileage: 25009,
         title: "clean",
-        transmission: "manual"
-    });// json payload
-      expect(res.status).toBe(422);
-    });
-    it('should return a 201 OK status', async () => {
-      const res = await request(server)
-      .post('/api/cars')
-      .send({
-        vin: "1GNLRFEDXAS142337",
-        make: "toyota",
-        model: "camry",
-        mileage: 1234,
-        title: "clean",
-        transmission: "manual"
-    });
-      expect(res.status).toBe(201);
-    });
-
-    it('responds with 422 status for invalid vin', async () => {
-        const res = await request(server)
-        .post('/api/cars')
-        .send({
-            vin: "1GNLRFEDXAS142xyz",
-            make: "toyota",
-            model: "camry",
-            mileage: 1234,
-            title: "clean",
-            transmission: "manual"
         });
-        expect(res.status).toBe(422);
-        console.log('res :>> ', res);
+      expect(cars[2]).toMatchObject({
+        vin: "1ZVBP8AM4C5220105",
+        make: "volkswagon",
+        model: "bug",
+        mileage: 25009,
         });
-    it('should return a 201 OK status', async () => {
-      const res = await request(server)
-      .post('/api/cars')
-      .send({
-        vin: "1GNLRFEDXAS142337",
-        make: "toyota",
-        model: "camry",
-        mileage: 1234,
-        title: "clean",
-        transmission: "manual"
     });
-      expect(res.status).toBe(201);
     });
-
-    it('responds with the newly created car', async () => {
-      let res = await request(server)
-      .post('/api/cars')
-      .send({
-        vin: "1FMZU73K33ZA43437",
-        make: "toyota",
-        model: "camry",
-        mileage: 1234,
-        title: "clean",
-        transmission: "manual"
-    });
-      expect(res.body).toMatchObject({
-        vin: "1FMZU73K33ZA43437",
-        make: "toyota",
-        model: "camry",
-        mileage: 1234,
-        title: "clean",
-        transmission: "manual"
-    });
-      res = await request(server)
-      .post('/api/cars')
-      .send({
-        vin: "1GNLRFEDXAS142337",
-        make: "toyota",
-        model: "camry",
-        mileage: 1234,
-        title: "clean",
-        transmission: "manual"
-    });
-      expect(res.body).toMatchObject({
-        vin: "1GNLRFEDXAS142337",
-        make: "toyota",
-        model: "camry",
-        mileage: 1234,
-        title: "clean",
-        transmission: "manual"
-    });
-    }, 500);
-  });
-
-  
+});
